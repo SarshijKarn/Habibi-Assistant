@@ -1,30 +1,36 @@
-# 🤖 Habibi Assistant
+# Habibi Assistant
 
-Your offline voice-powered AI buddy built in Python.  
-It listens, talks, cracks jokes, answers questions, and chats smartly!
+**Habibi Assistant** is a voice-controlled personal assistant built using Python. It offers multiple functionalities, including time and date checking, web searches, playing YouTube videos, opening apps or files, providing system information, and answering questions based on pre-trained knowledge. This assistant utilizes voice recognition and text-to-speech capabilities to interact with the user.
 
 ## Features
 
-- **Voice Commands:** Interact with the assistant using your voice.
-- **Current Time:** Get the current time.
-- **Current Date:** Get today's date.
-- **Jokes:** Ask for a joke and get a random one.
-- **Wikipedia Lookup:** Ask about anything, and the assistant will look it up on Wikipedia.
-- **Interactive Chat:** Have a conversation with the assistant based on pre-trained data from ChatterBot.
-- **Exit or Stop Commands:** Stop the interaction by either saying "exit", "bye", "stop" or pressing any key (space bar).
+- **Time & Date**: Ask for the current time or date.
+- **Jokes**: Get random jokes for some light-hearted moments.
+- **Wikipedia**: Ask about any topic, and the assistant will fetch a brief summary from Wikipedia.
+- **YouTube**: Play a video by searching its name on YouTube.
+- **Open Apps & Files**: Open any application or file on your system by providing its path.
+- **Internet Search**: Search any query directly on Google.
+- **System Info**: Get the current system CPU and memory usage.
 
+## Requirements
 
-## Installation
+Ensure you have Python 3.6+ installed. You will need the following libraries:
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/SarshijKarn/habibi-assistant.git
+- `speechrecognition` for voice input.
+- `pyttsx3` for text-to-speech output.
+- `wikipedia` for fetching summaries from Wikipedia.
+- `pyjokes` for generating jokes.
+- `chatterbot` for conversational AI features.
+- `keyboard` for detecting keypresses.
+- `webbrowser` for searching the internet and opening URLs.
+- `os` for opening files and applications.
+- `psutil` for system information.
 
+### Install required libraries:
 
-## 📦 Tech Stack
-Python, pyttsx3, SpeechRecognition, wikipedia, pyjokes, ChatterBot
+You can install the necessary libraries with pip:
 
-## 📌 Run Locally
 ```bash
-pip install -r requirements.txt
+pip install speechrecognition pyttsx3 wikipedia pyjokes chatterbot keyboard psutil
+
 python main.py
