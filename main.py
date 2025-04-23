@@ -6,6 +6,9 @@ import pyjokes
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 import keyboard  # Import keyboard module for detecting keypress
+import webbrowser  # For opening websites
+import os  # For opening apps or files
+import psutil  # For getting system information
 
 # Initialize the bot
 habibi_bot = ChatBot("Habibi")
@@ -49,11 +52,9 @@ def capabilities():
     capabilities_text = """
     Hello Boss, Greetings, I am Habibi, your personal assistant.
     I can:
-    - Tell you the current time.
-    - today's date.
-    - a joke.
-    - Look up information from Wikipedia.
-    - Answer your questions based on my knowledge.
+    - Tell you the current time, Today's date, A joke.
+    - Look up on Wikipedia, Answer your questions based on my knowledge.
+    - Play a YouTube video, Open any app or file,Search the internet.
     - And much more!
     
     Press any key to start interacting with me.
@@ -61,21 +62,45 @@ def capabilities():
     speak(capabilities_text)
     print(capabilities_text)
 
+# Function to search the internet
+def search_internet(query):
+    speak(f"Searching the internet for {query}")
+    webbrowser.open(f"https://www.google.com/search?q={query}")
+
+# Function to play a YouTube video
+def play_youtube_video(video_name):
+    speak(f"Playing {video_name} on YouTube.")
+    webbrowser.open(f"https://www.youtube.com/results?search_query={video_name}")
+
+# Function to open an app or file
+def open_app_or_file(path):
+    if os.path.exists(path):
+        speak(f"Opening {path}.")
+        os.startfile(path)
+    else:
+        speak("Sorry, I couldn't find that file or application.")
+
+# Function to get system information (example: CPU usage)
+def system_info():
+    cpu = psutil.cpu_percent(interval=1)
+    memory = psutil.virtual_memory().percent
+    speak(f"Your CPU usage is {cpu} percent and memory usage is {memory} percent.")
+
 # Main function
 def main():
     capabilities()
-    
+
     # Wait for user to press any key to continue
     while not keyboard.is_pressed('space'):  # Wait for space bar to be pressed
         pass
-    
-    speak("Let's get started!")
+
+    speak("Let's get started! Boss")
 
     while True:
         query = listen()
 
         if "exit" in query or "bye" in query or "stop" in query:  # Voice command to exit
-            speak("Goodbye, stay safe!")
+            speak("Goodbye, stay safe, See you soon boss!")
             break
 
         # Stop the assistant if any key is pressed
@@ -96,6 +121,17 @@ def main():
                 speak(summary)
             except Exception:
                 speak("Couldn't find that on Wikipedia.")
+        elif "play" in query and "youtube" in query:
+            video_name = query.replace("play", "").replace("youtube", "").strip()
+            play_youtube_video(video_name)
+        elif "open" in query:
+            path = query.replace("open", "").strip()
+            open_app_or_file(path)
+        elif "search" in query:
+            query_to_search = query.replace("search", "").strip()
+            search_internet(query_to_search)
+        elif "system" in query or "cpu" in query or "memory" in query:
+            system_info()
         elif query:
             response = habibi_bot.get_response(query)
             speak(str(response))
