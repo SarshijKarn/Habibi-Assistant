@@ -4,3 +4,6 @@ wikipedia
 pyjokes
 chatterbot
 chatterbot_corpus
+keyboard
+psutil
+pyyaml
