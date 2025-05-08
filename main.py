@@ -1,3 +1,26 @@
+instructions = r"""
+Step 1: Create a virtual environment  
+Command: python -m venv venv
+
+Step 2: Activate the virtual environment  
+For Windows:  
+Command: venv\\Scripts\\activate  
+For macOS/Linux:  
+Command: source venv/bin/activate
+
+Step 3: Upgrade pip to the latest version  
+Command: pip install --upgrade pip
+
+Step 4: Install the required dependencies  
+Command: pip install -r requirements.txt
+
+Additional dependencies (use compatible versions to avoid errors):  
+Command: pip install numpy==1.24.4 h5py==3.10.0 spacy
+
+Step 5: Run the main Python script  
+Command: python main.py
+"""
+
 import speech_recognition as sr
 import pyttsx3
 import datetime
@@ -25,19 +48,39 @@ def speak(text):
     engine.runAndWait()
 
 def listen():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("🎙️ Listening...")
-        audio = r.listen(source)
-        try:
-            query = r.recognize_google(audio)
-            print(f"You 🧠: {query}")
-            return query.lower()
-        except sr.UnknownValueError:
-            speak("Sorry, I didn't catch that.")
-        except sr.RequestError:
-            speak("Network error.")
-        return ""
+    import sounddevice as sd
+    import numpy as np
+    import speech_recognition as sr
+
+    recognizer = sr.Recognizer()
+    samplerate = 44100
+    duration = 5  # seconds
+
+    print("🎙️ Listening.")
+    speak("Listening.")
+
+    try:
+        recording = sd.rec(int(samplerate * duration), samplerate=samplerate, channels=1, dtype='int16')
+        sd.wait()
+        audio_data = recording.tobytes()
+        audio = sr.AudioData(audio_data, samplerate, 2)
+
+        print("⌛ Recognizing.")
+        query = recognizer.recognize_google(audio, language='en-in')
+        print(f"✅ You said: {query}")
+    except sr.UnknownValueError:
+        print("❌ Sorry, I could not understand.")
+        query = ""
+    except sr.RequestError:
+        print("❌ Could not request results from Google Speech Recognition.")
+        query = ""
+    except Exception as e:
+        print(f"❌ Error occurred: {e}")
+        query = ""
+
+    return query
+
+
 
 def get_time():
     now = datetime.datetime.now()
@@ -52,12 +95,10 @@ def capabilities():
     capabilities_text = """
     Hello Boss, Greetings, I am Habibi, your personal assistant.
     I can:
-    - Tell you the current time, Today's date, A joke.
-    - Look up on Wikipedia, Answer your questions based on my knowledge.
-    - Play a YouTube video, Open any app or file,Search the internet.
-    - And much more!
+    - Tell you the current time, date, jokes, Look up on Wikipedia, Answer your questions,
+    - Play YouTube video, Open any app or file, Search the internet, and much more.
     
-    Press any key to start interacting with me.
+    Press space key to start interacting with me and say exit or bye or stop to stop.
     """
     speak(capabilities_text)
     print(capabilities_text)
@@ -137,4 +178,4 @@ def main():
             speak(str(response))
 
 if __name__ == "__main__":
-    main()
+    main() 
