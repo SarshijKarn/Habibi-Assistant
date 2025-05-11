@@ -11,3 +11,5 @@ sounddevice
 numpy==1.24.4
 h5py==3.10.0
 spacy
+openai
+scipy
