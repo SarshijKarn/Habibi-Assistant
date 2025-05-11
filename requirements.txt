@@ -1,0 +1,13 @@
+SpeechRecognition
+pyttsx3
+wikipedia
+pyjokes
+chatterbot
+chatterbot_corpus
+keyboard
+psutil
+pyyaml
+sounddevice
+numpy==1.24.4
+h5py==3.10.0
+spacy
