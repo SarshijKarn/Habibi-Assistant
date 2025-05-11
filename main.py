@@ -7,7 +7,7 @@ For Windows:
 Command: venv\\Scripts\\activate  
 For macOS/Linux:  
 Command: source venv/bin/activate
-
+ 
 Step 3: Upgrade pip to the latest version  
 Command: pip install --upgrade pip
 
@@ -26,33 +26,33 @@ import pyttsx3
 import datetime
 import wikipedia
 import pyjokes
-import keyboard  # Import keyboard module for detecting keypress
-import webbrowser  # For opening websites
-import os  # For opening apps or files
-import psutil  # For getting system information
-
+import keyboard
+import webbrowser
+import os
+import psutil
 import openai
+import sounddevice as sd
+import numpy as np
+import scipy.io.wavfile as wav
+import tempfile
+import subprocess
 
+# OpenAI API setup
 openai.api_key = "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"
-openai.api_base = "https://api.openai.com/v1"
 
-import openai
-
-openai.api_key = "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"  # Replace with your OpenAI API key
-
+# Get response from OpenAI LLM
 def get_llm_response(prompt):
     try:
         response = openai.completions.create(
-            model="gpt-3.5-turbo",  # Replace with the desired model
+            model="gpt-3.5-turbo",
             prompt=prompt,
-            max_tokens=150  # Set an appropriate max_tokens value
+            max_tokens=150
         )
         return response['choices'][0]['text'].strip()
     except Exception as e:
         return f"Error generating response: {e}"
 
-
-# Initialize text-to-speech
+# Initialize TTS engine
 engine = pyttsx3.init()
 engine.setProperty("rate", 160)
 
@@ -62,26 +62,26 @@ def speak(text):
     engine.runAndWait()
 
 def listen():
-    import sounddevice as sd
-    import numpy as np
-    import speech_recognition as sr
-
     recognizer = sr.Recognizer()
-    samplerate = 44100
-    duration = 5  # seconds
-
     print("🎙️ Listening.")
     speak("Listening.")
 
     try:
+        duration = 5  # seconds
+        samplerate = 16000
+        print("🎙️ Recording audio using sounddevice...")
         recording = sd.rec(int(samplerate * duration), samplerate=samplerate, channels=1, dtype='int16')
         sd.wait()
-        audio_data = recording.tobytes()
-        audio = sr.AudioData(audio_data, samplerate, 2)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+            wav.write(f.name, samplerate, recording)
+            with sr.AudioFile(f.name) as source:
+                audio = recognizer.record(source)
 
         print("⌛ Recognizing.")
         query = recognizer.recognize_google(audio, language='en-in')
         print(f"✅ You said: {query}")
+
     except sr.UnknownValueError:
         print("❌ Sorry, I could not understand.")
         query = ""
@@ -94,40 +94,32 @@ def listen():
 
     return query
 
-
-
 def get_time():
-    now = datetime.datetime.now()
-    return now.strftime("It's %I:%M %p right now.")
+    return datetime.datetime.now().strftime("It's %I:%M %p right now.")
 
 def get_date():
-    today = datetime.date.today()
-    return f"Today is {today.strftime('%B %d, %Y')}."
+    return f"Today is {datetime.date.today().strftime('%B %d, %Y')}."
 
 # Announce capabilities
 def capabilities():
-    capabilities_text = """
+    text = """
     Hello Boss, Greetings, I am Habibi, your personal assistant.
     I can:
     - Tell you the current time, date, jokes, Look up on Wikipedia, Answer your questions,
     - Play YouTube video, Open any app or file, Search the internet, and much more.
-    
     Press space key to start interacting with me and say exit or bye or stop to stop.
     """
-    speak(capabilities_text)
-    print(capabilities_text)
+    speak(text)
+    print(text)
 
-# Function to search the internet
 def search_internet(query):
     speak(f"Searching the internet for {query}")
     webbrowser.open(f"https://www.google.com/search?q={query}")
 
-# Function to play a YouTube video
 def play_youtube_video(video_name):
     speak(f"Playing {video_name} on YouTube.")
     webbrowser.open(f"https://www.youtube.com/results?search_query={video_name}")
 
-# Function to open an app or file
 def open_app_or_file(path):
     if os.path.exists(path):
         speak(f"Opening {path}.")
@@ -135,31 +127,28 @@ def open_app_or_file(path):
     else:
         speak("Sorry, I couldn't find that file or application.")
 
-# Function to get system information (example: CPU usage)
 def system_info():
     cpu = psutil.cpu_percent(interval=1)
     memory = psutil.virtual_memory().percent
     speak(f"Your CPU usage is {cpu} percent and memory usage is {memory} percent.")
 
-# Main function
 def main():
     capabilities()
 
-    # Wait for user to press any key to continue
-    while not keyboard.is_pressed('space'):  # Wait for space bar to be pressed
+    # Wait for user to press space bar to start
+    while not keyboard.is_pressed('space'):
         pass
 
     speak("Let's get started! Boss")
 
     while True:
-        query = listen()
+        query = listen().lower()
 
-        if "exit" in query or "bye" in query or "stop" in query:  # Voice command to exit
+        if any(word in query for word in ["exit", "bye", "stop"]):
             speak("Goodbye, stay safe, See you soon boss!")
             break
 
-        # Stop the assistant if any key is pressed
-        if keyboard.is_pressed('space'):  # Check if any key is pressed
+        if keyboard.is_pressed('space'):
             speak("Stopping interaction now...")
             break
 
@@ -169,7 +158,7 @@ def main():
             speak(get_date())
         elif "joke" in query:
             speak(pyjokes.get_joke())
-        elif "what is" in query or "who is" in query or "tell me about" in query:
+        elif any(kw in query for kw in ["what is", "who is", "tell me about"]):
             try:
                 topic = query.replace("what is", "").replace("who is", "").replace("tell me about", "").strip()
                 summary = wikipedia.summary(topic, sentences=2)
@@ -183,13 +172,11 @@ def main():
             path = query.replace("open", "").strip()
             open_app_or_file(path)
         elif "search" in query:
-            query_to_search = query.replace("search", "").strip()
-            search_internet(query_to_search)
-        elif "system" in query or "cpu" in query or "memory" in query:
+            search_internet(query.replace("search", "").strip())
+        elif any(word in query for word in ["system", "cpu", "memory"]):
             system_info()
         elif query:
-            response = get_llm_response(query)
-            speak(response)
+            speak(get_llm_response(query))
 
 if __name__ == "__main__":
-    main() 
+    main()
